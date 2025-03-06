@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import InvitationCard from '@/components/InvitationCard';
 
 const sampleInvitation = {
@@ -32,6 +33,14 @@ const Index = () => {
             <p className="text-xl text-muted-foreground">
               A platform for non-profits to seamlessly connect with volunteers
             </p>
+            <div className="flex justify-center mt-4">
+              <Link 
+                to="/my-events" 
+                className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white transition-colors bg-accent hover:bg-accent/90 rounded-md shadow hover-lift"
+              >
+                View My Events
+              </Link>
+            </div>
           </div>
           
           <div className="bg-white/50 backdrop-blur-sm rounded-xl p-6 md:p-8 shadow-md">
