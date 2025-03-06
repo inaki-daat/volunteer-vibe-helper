@@ -1,9 +1,8 @@
-
 import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import QRCodeModal from '@/components/QRCodeModal';
 import DirectionsMap from '@/components/DirectionsMap';
-import { Calendar, Clock, MapPin, Download, ArrowLeft } from 'lucide-react';
+import { Calendar, Clock, MapPin, Download, ArrowLeft, ArrowRight } from 'lucide-react';
 
 const sampleInvitation = {
   id: "inv-123456",
@@ -31,7 +30,6 @@ const sampleInvitation = {
 const ConfirmationPage = () => {
   const { id } = useParams<{ id: string }>();
   
-  // In a real app, we would fetch the invitation data based on the ID
   const invitation = sampleInvitation;
   
   const qrCodeValue = `https://volunteer-vibe.example.com/check-in/${invitation.id}`;
@@ -44,12 +42,10 @@ const ConfirmationPage = () => {
   });
 
   useEffect(() => {
-    // Scroll to top when component mounts
     window.scrollTo(0, 0);
   }, []);
 
   const addToCalendar = () => {
-    // In a real app, this would generate an ICS file or open calendar options
     alert('Calendar integration would go here in a real app');
   };
 
@@ -57,13 +53,23 @@ const ConfirmationPage = () => {
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30 py-12">
       <div className="container px-4 mx-auto">
         <div className="max-w-4xl mx-auto space-y-8 animate-fade-in">
-          <Link 
-            to={`/invitation/${id}`}
-            className="inline-flex items-center text-sm font-medium text-accent hover:text-accent/80 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4 mr-1" />
-            Back to invitation
-          </Link>
+          <div className="flex items-center justify-between">
+            <Link 
+              to={`/invitation/${id}`}
+              className="inline-flex items-center text-sm font-medium text-accent hover:text-accent/80 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4 mr-1" />
+              Back to invitation
+            </Link>
+            
+            <Link 
+              to={`/invitation/${id}/event`}
+              className="inline-flex items-center text-sm font-medium text-accent hover:text-accent/80 transition-colors"
+            >
+              View Event Details
+              <ArrowRight className="w-4 h-4 ml-1" />
+            </Link>
+          </div>
           
           <div className="bg-white rounded-xl shadow-lg overflow-hidden">
             <div className="p-6 md:p-8">
