@@ -1,7 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import QRCode from '@/components/QRCode';
+import QRCodeModal from '@/components/QRCodeModal';
 import DirectionsMap from '@/components/DirectionsMap';
 import { Calendar, Clock, MapPin, Download, ArrowLeft } from 'lucide-react';
 
@@ -123,9 +123,14 @@ const ConfirmationPage = () => {
                 <div className="space-y-6">
                   <div className="bg-muted/30 rounded-xl p-6 flex flex-col items-center">
                     <h3 className="text-lg font-semibold mb-4">Your Check-in QR Code</h3>
-                    <QRCode value={qrCodeValue} size={180} className="mb-2" />
-                    <p className="text-xs text-muted-foreground text-center mt-2">
-                      Present this QR code when you arrive at the event for quick check-in
+                    <QRCodeModal 
+                      value={qrCodeValue} 
+                      title="Your Check-in QR Code"
+                      size={200}
+                      triggerClassName="px-4 py-2 bg-accent text-white rounded-md hover:bg-accent/90 hover-lift"
+                    />
+                    <p className="text-xs text-muted-foreground text-center mt-4">
+                      Click to view your QR code for quick check-in at the event
                     </p>
                   </div>
                   

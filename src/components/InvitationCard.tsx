@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Clock, MapPin, Check, X } from 'lucide-react';
-import QRCode from './QRCode';
+import QRCodeModal from './QRCodeModal';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -138,8 +138,12 @@ const InvitationCard: React.FC<InvitationCardProps> = ({
           
           {variant === 'full' && (
             <div className="flex flex-col items-center justify-center">
-              <QRCode value={qrCodeValue} size={120} className="mb-2" />
-              <span className="text-xs text-muted-foreground">Scan for check-in</span>
+              <QRCodeModal 
+                value={qrCodeValue} 
+                title={`Check-in for ${invitation.eventName}`}
+                triggerClassName="hover-lift"
+              />
+              <span className="text-xs text-muted-foreground mt-2">Click to view QR code for check-in</span>
             </div>
           )}
         </div>
