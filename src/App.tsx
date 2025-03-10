@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,24 +26,22 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            {/* Make AuthPage the default landing page */}
-            <Route path="/" element={<AuthPage />} />
-            
-            {/* Move the old index page to a new route */}
-            <Route path="/home" element={<Index />} />
-            
-            {/* Keep other routes the same */}
+            {/* Public routes */}
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/invitation/:id" element={<InvitationPage />} />
             <Route path="/invitation/:id/confirmation" element={<ConfirmationPage />} />
             <Route path="/invitation/:id/event" element={<EventPage />} />
             
-            {/* Protected routes */}
+            {/* Root route - redirect to auth if not logged in */}
+            <Route path="/" element={<Navigate to="/auth" replace />} />
+            
+            {/* Regular user routes */}
             <Route element={<PrivateRoute />}>
+              <Route path="/home" element={<Index />} />
               <Route path="/my-events" element={<MyEventsPage />} />
             </Route>
             
-            {/* Nonprofit protected routes */}
+            {/* Nonprofit specific routes */}
             <Route element={<PrivateRoute requireNonprofit={true} />}>
               <Route path="/nonprofit/home" element={<NonprofitHome />} />
               <Route path="/nonprofit/events" element={<NonprofitEvents />} />

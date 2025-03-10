@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -23,6 +22,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isNonprofit, setIsNonprofit] = useState(false);
   const navigate = useNavigate();
 
+  const redirectBasedOnRole = (role: string) => {
+    if (role === 'nonprofit') {
+      navigate('/nonprofit/home');
+    } else {
+      navigate('/home'); // Volunteer goes to home
+    }
+  };
+
   useEffect(() => {
     const handleRedirectResult = async () => {
       if (window.location.hash.includes('access_token')) {
@@ -35,9 +42,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         if (data.session) {
           setUser(data.session.user);
-          await fetchProfile(data.session.user.id);
+          const profileData = await fetchProfile(data.session.user.id);
           window.history.replaceState(null, '', window.location.pathname);
-          navigate('/');
+          
+          if (profileData) {
+            redirectBasedOnRole(profileData.role);
+          } else {
+            navigate('/home');
+          }
+          
           toast.success('Successfully signed in!');
         }
       }
@@ -67,7 +80,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.log('Auth state changed:', event);
         if (event === 'SIGNED_IN' && session) {
           setUser(session.user);
-          await fetchProfile(session.user.id);
+          const profileData = await fetchProfile(session.user.id);
+          
+          if (profileData && window.location.pathname === '/auth') {
+            redirectBasedOnRole(profileData.role);
+          }
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
           setProfile(null);
@@ -85,18 +102,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', userId)
+      .eq('id', userId as string)
       .maybeSingle();
 
     if (error) {
       console.error('Error fetching profile:', error);
-      return;
+      return null;
     }
 
     if (data) {
       setProfile(data);
       setIsNonprofit(data.role === 'nonprofit');
+      return data;
     }
+    
+    return null;
   };
 
   const signIn = async (email: string, password: string) => {
