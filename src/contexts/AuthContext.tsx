@@ -27,8 +27,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const redirectBasedOnRole = (role: string) => {
     console.log('Redirecting based on role:', role);
     if (role === 'nonprofit') {
+      console.log('Redirecting to nonprofit home');
       navigate('/nonprofit/home');
     } else {
+      console.log('Redirecting to volunteer home');
       navigate('/home'); // Volunteer goes to home
     }
   };
@@ -39,6 +41,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     
     const handleRedirectResult = async () => {
       if (window.location.hash.includes('access_token')) {
+        console.log('Handling redirect result from hash');
         const { data, error } = await supabase.auth.getSession();
         if (error) {
           console.error('Error handling redirect:', error);
@@ -52,6 +55,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           window.history.replaceState(null, '', window.location.pathname);
           
           if (profileData) {
+            console.log('Profile found during redirect handling, redirecting based on role:', profileData.role);
             redirectBasedOnRole(profileData.role);
           } else {
             navigate('/home');
@@ -77,9 +81,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           console.log('Session found:', data.session.user.id);
           if (isMounted) setUser(data.session.user);
           const profileData = await fetchProfile(data.session.user.id);
+          console.log('Profile data from session:', profileData);
           
           // Only redirect if we're on the auth page
           if (window.location.pathname === '/auth' && profileData) {
+            console.log('On auth page with profile data, redirecting based on role:', profileData.role);
             redirectBasedOnRole(profileData.role);
           }
         }
@@ -103,6 +109,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           
           if (profileData && isMounted) {
             console.log('Profile data after sign in:', profileData);
+            setIsNonprofit(profileData.role === 'nonprofit');
+            console.log('Is nonprofit:', profileData.role === 'nonprofit');
             redirectBasedOnRole(profileData.role);
           }
         } else if (event === 'SIGNED_OUT') {
@@ -110,6 +118,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setUser(null);
             setProfile(null);
             setIsNonprofit(false);
+            navigate('/auth');
           }
         }
       }
@@ -138,8 +147,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (data) {
         console.log('Profile data retrieved:', data);
-        setProfile(data);
-        setIsNonprofit(data.role === 'nonprofit');
+        if (isMounted) {
+          setProfile(data);
+          setIsNonprofit(data.role === 'nonprofit');
+          console.log('Is nonprofit set to:', data.role === 'nonprofit');
+        }
         return data;
       }
       

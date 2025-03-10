@@ -1,25 +1,28 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2 } from 'lucide-react';
 
 type PrivateRouteProps = {
   requireNonprofit?: boolean;
 };
 
 const PrivateRoute: React.FC<PrivateRouteProps> = ({ requireNonprofit = false }) => {
-  const { user, profile, loading, isNonprofit } = useAuth();
+  const { user, profile, isNonprofit } = useAuth();
   const location = useLocation();
 
   // Add debugging logs
-  console.log('PrivateRoute state:', { 
+  console.log('PrivateRoute rendering with:', { 
     user: !!user, 
     profile: !!profile,
     isNonprofit,
     requireNonprofit,
     currentPath: location.pathname
   });
+
+  useEffect(() => {
+    console.log('PrivateRoute mounted with isNonprofit:', isNonprofit);
+  }, [isNonprofit]);
 
   if (!user) {
     // If not logged in, redirect to auth page
