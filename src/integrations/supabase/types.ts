@@ -139,31 +139,43 @@ export type Database = {
       }
       profiles: {
         Row: {
+          address: string | null
           created_at: string
           email: string
           full_name: string | null
           id: string
+          organization_description: string | null
+          organization_name: string | null
           phone: string | null
           role: Database["public"]["Enums"]["user_role"]
           updated_at: string
+          website: string | null
         }
         Insert: {
+          address?: string | null
           created_at?: string
           email: string
           full_name?: string | null
           id: string
+          organization_description?: string | null
+          organization_name?: string | null
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
+          website?: string | null
         }
         Update: {
+          address?: string | null
           created_at?: string
           email?: string
           full_name?: string | null
           id?: string
+          organization_description?: string | null
+          organization_name?: string | null
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
+          website?: string | null
         }
         Relationships: []
       }
