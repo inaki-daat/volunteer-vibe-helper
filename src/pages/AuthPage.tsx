@@ -44,7 +44,7 @@ const AuthPage = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/30 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Volunteer Connect</CardTitle>
+          <CardTitle className="text-2xl font-bold">Altruence</CardTitle>
           <CardDescription>Sign in to your account or create a new one</CardDescription>
         </CardHeader>
         <Tabs defaultValue="signin" className="w-full">
