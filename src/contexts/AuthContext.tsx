@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -82,7 +83,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUser(session.user);
           const profileData = await fetchProfile(session.user.id);
           
-          if (profileData && window.location.pathname === '/auth') {
+          if (profileData) {
             redirectBasedOnRole(profileData.role);
           }
         } else if (event === 'SIGNED_OUT') {
@@ -157,6 +158,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (error) throw error;
       
       toast.success('Successfully signed up! Please check your email for verification.');
+      
+      // Automatically redirect based on role after successful signup
+      if (data.user) {
+        setIsNonprofit(role === 'nonprofit');
+        redirectBasedOnRole(role);
+      }
     } catch (error: any) {
       toast.error(error.message || 'An error occurred during sign up');
     } finally {
