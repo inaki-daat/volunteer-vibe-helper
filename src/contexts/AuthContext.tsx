@@ -25,6 +25,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
 
   const redirectBasedOnRole = (role: string) => {
+    console.log('Redirecting based on role:', role);
     if (role === 'nonprofit') {
       navigate('/nonprofit/home');
     } else {
@@ -85,6 +86,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           const profileData = await fetchProfile(session.user.id);
           
           if (profileData) {
+            console.log('Profile data after sign in:', profileData);
             redirectBasedOnRole(profileData.role);
           }
         } else if (event === 'SIGNED_OUT') {
@@ -101,24 +103,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [navigate]);
 
   const fetchProfile = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId as string)
-      .maybeSingle();
+    try {
+      console.log('Fetching profile for user ID:', userId);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
 
-    if (error) {
-      console.error('Error fetching profile:', error);
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return null;
+      }
+
+      if (data) {
+        console.log('Profile data retrieved:', data);
+        setProfile(data);
+        setIsNonprofit(data.role === 'nonprofit');
+        return data;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Exception in fetchProfile:', error);
       return null;
     }
-
-    if (data) {
-      setProfile(data);
-      setIsNonprofit(data.role === 'nonprofit');
-      return data;
-    }
-    
-    return null;
   };
 
   const signIn = async (email: string, password: string) => {
@@ -133,6 +142,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (error) throw error;
       
       // If we get here, sign in was successful
+      // The redirection will be handled by the onAuthStateChange listener
     } catch (error: any) {
       toast.error(error.message || 'An error occurred during sign in');
     } finally {
@@ -162,11 +172,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       toast.success('Successfully signed up! Please check your email for verification.');
       
-      // Automatically redirect based on role after successful signup
-      if (data.user) {
-        setIsNonprofit(role === 'nonprofit');
-        redirectBasedOnRole(role);
-      }
+      // The actual redirection will happen through the onAuthStateChange listener
+      // after email verification (if required) and profile creation
+      setIsNonprofit(role === 'nonprofit');
     } catch (error: any) {
       toast.error(error.message || 'An error occurred during sign up');
     } finally {
@@ -194,7 +202,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     isNonprofit,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={value}>{!authLoading ? children : (
+    <div className="flex items-center justify-center h-screen">
+      <div className="text-center">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-muted-foreground">Loading your session...</p>
+      </div>
+    </div>
+  )}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

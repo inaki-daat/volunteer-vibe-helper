@@ -9,23 +9,34 @@ type PrivateRouteProps = {
 };
 
 const PrivateRoute: React.FC<PrivateRouteProps> = ({ requireNonprofit = false }) => {
-  const { user, loading, isNonprofit } = useAuth();
+  const { user, profile, loading, isNonprofit } = useAuth();
   const location = useLocation();
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
+  // Add debugging logs
+  console.log('PrivateRoute state:', { 
+    user: !!user, 
+    profile: !!profile,
+    isNonprofit,
+    requireNonprofit,
+    currentPath: location.pathname
+  });
 
   if (!user) {
+    // If not logged in, redirect to auth page
+    console.log('No user, redirecting to /auth');
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
   if (requireNonprofit && !isNonprofit) {
+    // If this route requires nonprofit status but user is not a nonprofit
+    console.log('User is not a nonprofit, redirecting to /home');
     return <Navigate to="/home" replace />;
+  }
+
+  if (isNonprofit && location.pathname === '/home') {
+    // If user is a nonprofit but trying to access volunteer home
+    console.log('Nonprofit accessing /home, redirecting to /nonprofit/home');
+    return <Navigate to="/nonprofit/home" replace />;
   }
 
   return <Outlet />;
