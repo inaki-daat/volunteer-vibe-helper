@@ -19,7 +19,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
   const [isNonprofit, setIsNonprofit] = useState(false);
   const navigate = useNavigate();
 
@@ -62,7 +63,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (error) {
         console.error('Error fetching session:', error);
-        setLoading(false);
+        setAuthLoading(false);
         return;
       }
       
@@ -71,7 +72,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         await fetchProfile(data.session.user.id);
       }
       
-      setLoading(false);
+      setAuthLoading(false);
     };
 
     handleRedirectResult().then(getSession);

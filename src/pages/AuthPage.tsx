@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,15 +37,12 @@ const AuthPage = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Combine first and last name for the full name
     const fullName = `${firstName} ${lastName}`;
     
-    // Additional data based on role
     const additionalData: Record<string, any> = {
       phone: phoneNumber,
     };
 
-    // Add nonprofit specific fields
     if (role === 'nonprofit') {
       additionalData.organization_name = orgName;
       additionalData.website = website;
