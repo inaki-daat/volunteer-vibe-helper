@@ -131,10 +131,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
       if (error) throw error;
+      
+      // If we get here, sign in was successful
     } catch (error: any) {
       toast.error(error.message || 'An error occurred during sign in');
     } finally {
-      setLoading(false);
+      setLoading(false); // Make sure loading state is reset regardless of outcome
     }
   };
 
@@ -168,7 +170,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error: any) {
       toast.error(error.message || 'An error occurred during sign up');
     } finally {
-      setLoading(false);
+      setLoading(false); // Make sure loading state is reset regardless of outcome
     }
   };
 

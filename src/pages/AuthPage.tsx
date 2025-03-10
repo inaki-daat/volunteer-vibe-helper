@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Link } from 'react-router-dom';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 
 const AuthPage = () => {
@@ -124,7 +125,12 @@ const AuthPage = () => {
               </CardContent>
               <CardFooter className="flex flex-col space-y-4">
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? 'Signing in...' : 'Sign In'}
+                  {loading ? (
+                    <span className="flex items-center">
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Signing in...
+                    </span>
+                  ) : 'Sign In'}
                 </Button>
                 <p className="text-sm text-center text-muted-foreground">
                   Don't have an account? <Link to="#" className="text-primary underline" onClick={switchToSignUp}>Sign up</Link>
@@ -305,7 +311,14 @@ const AuthPage = () => {
                   className="w-full" 
                   disabled={loading || (role === 'nonprofit' && !agreeToTerms)}
                 >
-                  {loading ? 'Signing up...' : role === 'volunteer' ? 'CREATE VOLUNTEER ACCOUNT' : 'CREATE NON-PROFIT ACCOUNT'}
+                  {loading ? (
+                    <span className="flex items-center">
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Signing up...
+                    </span>
+                  ) : (
+                    role === 'volunteer' ? 'CREATE VOLUNTEER ACCOUNT' : 'CREATE NON-PROFIT ACCOUNT'
+                  )}
                 </Button>
                 <p className="text-sm text-center text-muted-foreground">
                   Already have an account? <Link to="#" className="text-primary underline" onClick={switchToSignIn}>Sign in</Link>
