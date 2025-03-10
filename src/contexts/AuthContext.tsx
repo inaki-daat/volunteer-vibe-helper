@@ -1,0 +1,157 @@
+
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+
+type AuthContextType = {
+  user: any;
+  profile: any;
+  loading: boolean;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, fullName: string, role: 'volunteer' | 'nonprofit') => Promise<void>;
+  signOut: () => Promise<void>;
+  isNonprofit: boolean;
+};
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [isNonprofit, setIsNonprofit] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if there's an active session
+    const getSession = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error('Error fetching session:', error);
+        setLoading(false);
+        return;
+      }
+      
+      if (data.session) {
+        setUser(data.session.user);
+        // Fetch the user profile
+        await fetchProfile(data.session.user.id);
+      }
+      
+      setLoading(false);
+    };
+
+    getSession();
+
+    // Listen for auth state changes
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          setUser(session.user);
+          await fetchProfile(session.user.id);
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setProfile(null);
+          setIsNonprofit(false);
+        }
+      }
+    );
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
+  const fetchProfile = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching profile:', error);
+      return;
+    }
+
+    setProfile(data);
+    setIsNonprofit(data.role === 'nonprofit');
+  };
+
+  const signIn = async (email: string, password: string) => {
+    setLoading(true);
+    
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+      
+      toast.success('Successfully signed in!');
+      navigate('/');
+    } catch (error: any) {
+      toast.error(error.message || 'An error occurred during sign in');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const signUp = async (email: string, password: string, fullName: string, role: 'volunteer' | 'nonprofit') => {
+    setLoading(true);
+    
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            role: role,
+          },
+        },
+      });
+
+      if (error) throw error;
+      
+      toast.success('Successfully signed up! Please check your email for verification.');
+    } catch (error: any) {
+      toast.error(error.message || 'An error occurred during sign up');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const signOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast.success('Successfully signed out');
+      navigate('/');
+    } catch (error: any) {
+      toast.error(error.message || 'An error occurred during sign out');
+    }
+  };
+
+  const value = {
+    user,
+    profile,
+    loading,
+    signIn,
+    signUp,
+    signOut,
+    isNonprofit,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};

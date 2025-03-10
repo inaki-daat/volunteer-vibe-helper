@@ -2,6 +2,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import InvitationCard from '@/components/InvitationCard';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { LogIn, LogOut, Building2, User } from 'lucide-react';
 
 const sampleInvitation = {
   id: "inv-123456",
@@ -22,23 +25,64 @@ const sampleInvitation = {
 };
 
 const Index = () => {
+  const { user, signOut, isNonprofit } = useAuth();
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">
       <div className="container px-4 py-12 mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-4xl md:text-5xl font-display font-bold tracking-tight">
+            Volunteer Connect
+          </h1>
+          <div className="flex gap-2">
+            {user ? (
+              <>
+                <Button variant="outline" onClick={signOut}>
+                  <LogOut className="mr-2 h-4 w-4" /> Sign Out
+                </Button>
+                {isNonprofit ? (
+                  <Link to="/nonprofit/home">
+                    <Button>
+                      <Building2 className="mr-2 h-4 w-4" /> Nonprofit Dashboard
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link to="/my-events">
+                    <Button>
+                      <User className="mr-2 h-4 w-4" /> My Events
+                    </Button>
+                  </Link>
+                )}
+              </>
+            ) : (
+              <Link to="/auth">
+                <Button>
+                  <LogIn className="mr-2 h-4 w-4" /> Sign In
+                </Button>
+              </Link>
+            )}
+          </div>
+        </div>
+        
         <div className="max-w-3xl mx-auto space-y-8 animate-fade-in">
           <div className="text-center space-y-4">
-            <h1 className="text-4xl md:text-5xl font-display font-bold tracking-tight">
-              Volunteer Connect
-            </h1>
             <p className="text-xl text-muted-foreground">
               A platform for non-profits to seamlessly connect with volunteers
             </p>
-            <div className="flex justify-center mt-4">
+            <div className="flex justify-center gap-4 mt-4">
+              {!user && (
+                <Link 
+                  to="/auth" 
+                  className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white transition-colors bg-accent hover:bg-accent/90 rounded-md shadow hover-lift"
+                >
+                  Get Started
+                </Link>
+              )}
               <Link 
                 to="/my-events" 
-                className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white transition-colors bg-accent hover:bg-accent/90 rounded-md shadow hover-lift"
+                className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors rounded-md shadow hover-lift"
               >
-                View My Events
+                View Events
               </Link>
             </div>
           </div>
