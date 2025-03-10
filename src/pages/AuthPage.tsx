@@ -26,6 +26,20 @@ const AuthPage = () => {
     await signUp(email, password, fullName, role);
   };
 
+  const switchToSignUp = () => {
+    const signupTab = document.querySelector('[data-value="signup"]') as HTMLElement;
+    if (signupTab) {
+      signupTab.click();
+    }
+  };
+
+  const switchToSignIn = () => {
+    const signinTab = document.querySelector('[data-value="signin"]') as HTMLElement;
+    if (signinTab) {
+      signinTab.click();
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/30 p-4">
       <Card className="w-full max-w-md">
@@ -68,7 +82,7 @@ const AuthPage = () => {
                   {loading ? 'Signing in...' : 'Sign In'}
                 </Button>
                 <p className="text-sm text-center text-muted-foreground">
-                  Don't have an account? <Link to="#" className="text-primary underline" onClick={() => document.querySelector('[data-value="signup"]')?.click()}>Sign up</Link>
+                  Don't have an account? <Link to="#" className="text-primary underline" onClick={switchToSignUp}>Sign up</Link>
                 </p>
               </CardFooter>
             </form>
@@ -127,7 +141,7 @@ const AuthPage = () => {
                   {loading ? 'Signing up...' : 'Sign Up'}
                 </Button>
                 <p className="text-sm text-center text-muted-foreground">
-                  Already have an account? <Link to="#" className="text-primary underline" onClick={() => document.querySelector('[data-value="signin"]')?.click()}>Sign in</Link>
+                  Already have an account? <Link to="#" className="text-primary underline" onClick={switchToSignIn}>Sign in</Link>
                 </p>
               </CardFooter>
             </form>
