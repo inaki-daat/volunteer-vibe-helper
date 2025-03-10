@@ -34,6 +34,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
+    // Track whether the component is mounted to prevent state updates after unmounting
+    let isMounted = true;
+    
     const handleRedirectResult = async () => {
       if (window.location.hash.includes('access_token')) {
         const { data, error } = await supabase.auth.getSession();
@@ -60,44 +63,61 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     const getSession = async () => {
-      const { data, error } = await supabase.auth.getSession();
-      
-      if (error) {
-        console.error('Error fetching session:', error);
-        setAuthLoading(false);
-        return;
+      try {
+        console.log('Fetching initial session');
+        const { data, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error fetching session:', error);
+          if (isMounted) setAuthLoading(false);
+          return;
+        }
+        
+        if (data.session) {
+          console.log('Session found:', data.session.user.id);
+          if (isMounted) setUser(data.session.user);
+          const profileData = await fetchProfile(data.session.user.id);
+          
+          // Only redirect if we're on the auth page
+          if (window.location.pathname === '/auth' && profileData) {
+            redirectBasedOnRole(profileData.role);
+          }
+        }
+        
+        if (isMounted) setAuthLoading(false);
+      } catch (error) {
+        console.error('Unexpected error in getSession:', error);
+        if (isMounted) setAuthLoading(false);
       }
-      
-      if (data.session) {
-        setUser(data.session.user);
-        await fetchProfile(data.session.user.id);
-      }
-      
-      setAuthLoading(false);
     };
 
-    handleRedirectResult().then(getSession);
+    // Execute these functions in sequence
+    handleRedirectResult().then(() => getSession());
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event);
         if (event === 'SIGNED_IN' && session) {
-          setUser(session.user);
+          if (isMounted) setUser(session.user);
           const profileData = await fetchProfile(session.user.id);
           
-          if (profileData) {
+          if (profileData && isMounted) {
             console.log('Profile data after sign in:', profileData);
             redirectBasedOnRole(profileData.role);
           }
         } else if (event === 'SIGNED_OUT') {
-          setUser(null);
-          setProfile(null);
-          setIsNonprofit(false);
+          if (isMounted) {
+            setUser(null);
+            setProfile(null);
+            setIsNonprofit(false);
+          }
         }
       }
     );
 
+    // Cleanup function
     return () => {
+      isMounted = false;
       authListener.subscription.unsubscribe();
     };
   }, [navigate]);
@@ -206,7 +226,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     <div className="flex items-center justify-center h-screen">
       <div className="text-center">
         <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-muted-foreground">Loading your session...</p>
+        <p className="text-muted-foreground">Loading your session... <span className="text-xs">(please wait)</span></p>
       </div>
     </div>
   )}</AuthContext.Provider>;
