@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -9,7 +8,7 @@ type AuthContextType = {
   profile: any;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, fullName: string, role: 'volunteer' | 'nonprofit') => Promise<void>;
+  signUp: (email: string, password: string, fullName: string, role: 'volunteer' | 'nonprofit', additionalData?: Record<string, any>) => Promise<void>;
   signOut: () => Promise<void>;
   isNonprofit: boolean;
 };
@@ -24,7 +23,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if there's an active session
     const getSession = async () => {
       const { data, error } = await supabase.auth.getSession();
       
@@ -36,7 +34,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (data.session) {
         setUser(data.session.user);
-        // Fetch the user profile
         await fetchProfile(data.session.user.id);
       }
       
@@ -45,7 +42,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     getSession();
 
-    // Listen for auth state changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' && session) {
@@ -100,18 +96,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const signUp = async (email: string, password: string, fullName: string, role: 'volunteer' | 'nonprofit') => {
+  const signUp = async (email: string, password: string, fullName: string, role: 'volunteer' | 'nonprofit', additionalData?: Record<string, any>) => {
     setLoading(true);
     
     try {
+      const userData = {
+        full_name: fullName,
+        role: role,
+        ...additionalData
+      };
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: {
-            full_name: fullName,
-            role: role,
-          },
+          data: userData,
         },
       });
 
