@@ -33,12 +33,18 @@ export const useAuthActions = () => {
     setLoading(true);
     
     try {
-      // Make sure to properly format the role as a string to match the enum type in the database
+      // Create the user metadata object with the correct structure
       const userData = {
         full_name: fullName,
-        role: role, // This will be cast to user_role enum in the handle_new_user function
-        ...additionalData
+        role, // Pass as string, the database function will handle casting to enum
       };
+      
+      // Add any additional data as top-level properties in the metadata
+      if (additionalData) {
+        Object.keys(additionalData).forEach(key => {
+          userData[key] = additionalData[key];
+        });
+      }
       
       console.log('Signing up with userData:', userData);
       
