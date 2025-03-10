@@ -23,6 +23,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const handleRedirectResult = async () => {
+      if (window.location.hash.includes('access_token')) {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Error handling redirect:', error);
+          toast.error('Authentication failed during redirect');
+          return;
+        }
+        
+        if (data.session) {
+          setUser(data.session.user);
+          await fetchProfile(data.session.user.id);
+          window.history.replaceState(null, '', window.location.pathname);
+          navigate('/');
+          toast.success('Successfully signed in!');
+        }
+      }
+    };
+
     const getSession = async () => {
       const { data, error } = await supabase.auth.getSession();
       
@@ -40,10 +59,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false);
     };
 
-    getSession();
+    handleRedirectResult().then(getSession);
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event);
         if (event === 'SIGNED_IN' && session) {
           setUser(session.user);
           await fetchProfile(session.user.id);
@@ -58,7 +78,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate]);
 
   const fetchProfile = async (userId: string) => {
     const { data, error } = await supabase
@@ -86,9 +106,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
       if (error) throw error;
-      
-      toast.success('Successfully signed in!');
-      navigate('/');
     } catch (error: any) {
       toast.error(error.message || 'An error occurred during sign in');
     } finally {
