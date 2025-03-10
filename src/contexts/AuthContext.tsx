@@ -35,8 +35,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
-    // Track whether the component is mounted to prevent state updates after unmounting
     let isMounted = true;
+    let sessionCheckTimeout: NodeJS.Timeout | null = null;
     
     const handleRedirectResult = async () => {
       if (window.location.hash.includes('access_token')) {
@@ -82,7 +82,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           const profileData = await fetchProfile(data.session.user.id);
           console.log('Profile data from session:', profileData);
           
-          // Only redirect if we're on the auth page
           if (window.location.pathname === '/auth' && profileData) {
             console.log('On auth page with profile data, redirecting based on role:', profileData.role);
             redirectBasedOnRole(profileData.role);
@@ -96,8 +95,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
 
-    // Execute these functions in sequence
-    handleRedirectResult().then(() => getSession());
+    handleRedirectResult().then(() => {
+      getSession();
+      
+      sessionCheckTimeout = setTimeout(() => {
+        if (isMounted && authLoading) {
+          console.log('Session check timed out, forcing authLoading to false');
+          setAuthLoading(false);
+        }
+      }, 5000);
+    });
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -112,20 +119,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             console.log('Is nonprofit:', profileData.role === 'nonprofit');
             redirectBasedOnRole(profileData.role);
           }
+          if (isMounted) setAuthLoading(false);
         } else if (event === 'SIGNED_OUT') {
           if (isMounted) {
             setUser(null);
             setProfile(null);
             setIsNonprofit(false);
             navigate('/auth');
+            setAuthLoading(false);
           }
+        } else if (event === 'TOKEN_REFRESHED') {
+          if (isMounted) setAuthLoading(false);
         }
       }
     );
 
-    // Cleanup function
     return () => {
       isMounted = false;
+      if (sessionCheckTimeout) clearTimeout(sessionCheckTimeout);
       authListener.subscription.unsubscribe();
     };
   }, [navigate]);
@@ -170,12 +181,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (error) throw error;
       
-      // If we get here, sign in was successful
-      // The redirection will be handled by the onAuthStateChange listener
+      if (data) {
+        console.log('Sign in successful:', data);
+      }
     } catch (error: any) {
       toast.error(error.message || 'An error occurred during sign in');
     } finally {
-      setLoading(false); // Make sure loading state is reset regardless of outcome
+      setLoading(false);
     }
   };
 
@@ -201,13 +213,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       toast.success('Successfully signed up! Please check your email for verification.');
       
-      // The actual redirection will happen through the onAuthStateChange listener
-      // after email verification (if required) and profile creation
       setIsNonprofit(role === 'nonprofit');
     } catch (error: any) {
       toast.error(error.message || 'An error occurred during sign up');
     } finally {
-      setLoading(false); // Make sure loading state is reset regardless of outcome
+      setLoading(false);
     }
   };
 
