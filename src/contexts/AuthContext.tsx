@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -85,15 +86,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       .from('profiles')
       .select('*')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error('Error fetching profile:', error);
       return;
     }
 
-    setProfile(data);
-    setIsNonprofit(data.role === 'nonprofit');
+    if (data) {
+      setProfile(data);
+      setIsNonprofit(data.role === 'nonprofit');
+    }
   };
 
   const signIn = async (email: string, password: string) => {

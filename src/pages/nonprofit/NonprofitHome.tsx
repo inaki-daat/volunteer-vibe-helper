@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -57,7 +56,7 @@ const NonprofitHome = () => {
 
     const allApplications = data || [];
     const pending = allApplications.filter(app => app.status === 'pending');
-    const recent = allApplications.sort((a, b) => 
+    const recent = [...allApplications].sort((a, b) => 
       new Date(b.applied_at).getTime() - new Date(a.applied_at).getTime()
     ).slice(0, 5);
 
@@ -69,8 +68,11 @@ const NonprofitHome = () => {
   const updateApplicationStatus = async (applicationId: string, status: string) => {
     const { error } = await supabase
       .from('applications')
-      .update({ status, updated_at: new Date().toISOString() })
-      .eq('id', applicationId);
+      .update({ 
+        status: status, 
+        updated_at: new Date().toISOString() 
+      } as any)
+      .eq('id', applicationId as any);
 
     if (error) {
       console.error('Error updating application:', error);
