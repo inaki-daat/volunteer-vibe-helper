@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -147,11 +146,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (data) {
         console.log('Profile data retrieved:', data);
-        if (isMounted) {
-          setProfile(data);
-          setIsNonprofit(data.role === 'nonprofit');
-          console.log('Is nonprofit set to:', data.role === 'nonprofit');
-        }
+        setProfile(data);
+        setIsNonprofit(data.role === 'nonprofit');
+        console.log('Is nonprofit set to:', data.role === 'nonprofit');
         return data;
       }
       
