@@ -33,11 +33,14 @@ export const useAuthActions = () => {
     setLoading(true);
     
     try {
+      // Make sure to properly format the role as a string to match the enum type in the database
       const userData = {
         full_name: fullName,
-        role: role,
+        role: role, // This will be cast to user_role enum in the handle_new_user function
         ...additionalData
       };
+      
+      console.log('Signing up with userData:', userData);
       
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -51,6 +54,7 @@ export const useAuthActions = () => {
       
       toast.success('Successfully signed up! Please check your email for verification.');
     } catch (error: any) {
+      console.error('Sign up error:', error);
       toast.error(error.message || 'An error occurred during sign up');
     } finally {
       setLoading(false);
